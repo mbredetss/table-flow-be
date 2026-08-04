@@ -41,11 +41,11 @@ Acceptance Criteria: [
     - Pelanggan bisa melihat pesanannya ada di urutan ke berapa.
 ]
 
-Epic: Barista bisa memantau pesanan dari aplikasi.
-User Story: Sebagai seorang Barista, saya ingin bisa memantau pesanan dari aplikasi, agar dapat memantau pesanan yang masuk.
+Epic: Kasir (Admin) bisa memantau pesanan dari aplikasi.
+User Story: Sebagai Kasir (Admin), saya ingin bisa memantau pesanan dari aplikasi, agar dapat memantau pesanan yang masuk.
 Importance/Status: High
 Acceptance Criteria: [
-    - Barista dapat login ke situs web cafe.
-    - Barista dapat melihat daftar pesanan yang masuk.
-    - Barista dapat mengubah status pesanan menjadi 'selesai'.
+    - Kasir (Admin) dapat login ke situs web cafe.
+    - Kasir (Admin) dapat melihat daftar pesanan yang masuk melalui halaman dashboard.
+    - Kasir (Admin) dapat mengubah status pesanan menjadi 'selesai'.
 ]
