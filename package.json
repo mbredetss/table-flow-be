@@ -1,0 +1,46 @@
+{
+  "name": "table-flow-be",
+  "version": "1.0.0",
+  "description": "Aplikasi ini adalah memesan dan membayar menu (melalui QRIS) langsung di tempat mereka duduk tanpa harus ke kasir untuk memesan makanan. Setelah pelanggan memesan makanan, akan masuk ke daftar pesanan sehingga barista bisa langsung membuat pesanan yang dipesan.",
+  "keywords": [
+    "table",
+    "flow"
+  ],
+  "homepage": "https://github.com/mbredetss/table-flow#readme",
+  "bugs": {
+    "url": "https://github.com/mbredetss/table-flow/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mbredetss/table-flow.git"
+  },
+  "license": "ISC",
+  "author": "mbredetss",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon ./src/server.js",
+    "test": "vitest --run",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "migrate": "node-pg-migrate",
+    "migrate:test": "node-pg-migrate --envPath .test.env",
+    "lint": "eslint ./",
+    "lint:fix": "eslint ./ --fix"
+  },
+  "devDependencies": {
+    "@vitest/eslint-plugin": "^1.6.26",
+    "nodemon": "^3.1.14",
+    "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "joi": "^18.2.3",
+    "jsonwebtoken": "^9.0.3",
+    "nanoid": "^6.0.1",
+    "pg": "^8.22.0"
+  }
+}
