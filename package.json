@@ -19,8 +19,8 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon ./src/server.js",
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
     "test": "vitest --run",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
