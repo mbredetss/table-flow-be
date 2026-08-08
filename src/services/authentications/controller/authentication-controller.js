@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt';
 import { TokenManager } from '../../../security/token-manager.js';
 import { response } from '../../../utils/index.js';
-import userRepositories from '../../users/repositories/user-repositories.js';
 import authenticationRepositories from '../repositories/authentication-repositories.js';
 
 export const login = async (req, res) => {
