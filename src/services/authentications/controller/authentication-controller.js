@@ -7,7 +7,7 @@ import authenticationRepositories from '../repositories/authentication-repositor
 export const login = async (req, res) => {
   const { username, password } = req.validated;
 
-  const user = await userRepositories.verifyUserCredential(username);
+  const user = await authenticationRepositories.verifyUserCredential(username);
 
   if (user) {
     const isCredentialValid = await bcrypt.compare(password, user.password);
