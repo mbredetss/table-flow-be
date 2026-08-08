@@ -1,7 +1,6 @@
-/* istanbul ignore file */
-import { Pool } from "pg";
+import pool from "./pool";
 
-const pool = new Pool();
+/* istanbul ignore file */
 const AuthenticationsTableTestHelper = {
   async addToken(token) {
     const query = {

@@ -13,8 +13,9 @@ export const login = async (req, res) => {
 
     if (isCredentialValid) {
       const id = user.id;
-      const accessToken = TokenManager.generateAccessToken({ id });
-      const refreshToken = TokenManager.generateRefreshToken({ id });
+      const role = user.role;
+      const accessToken = TokenManager.generateAccessToken({ id, role });
+      const refreshToken = TokenManager.generateRefreshToken({ id, role });
 
       await authenticationRepositories.addRefreshToken(refreshToken);
 
@@ -36,8 +37,8 @@ export const newAccessToken = async (req, res) => {
 
   if (isRefreshTokenValid) {
     try {
-      const { id } = TokenManager.verifyRefreshToken(refreshToken);
-      const accessToken = TokenManager.generateAccessToken({ id });
+      const { id, role } = TokenManager.verifyRefreshToken(refreshToken);
+      const accessToken = TokenManager.generateAccessToken({ id, role });
 
       return response(res, 200, null, { accessToken });
     } catch {
