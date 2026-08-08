@@ -44,10 +44,10 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 
 **Acceptance Criteria:**
 
-- [ ] Kasir (Admin) dapat login ke situs web cafe.
-- [ ] Kasir (Admin) dapat menambahkan menu.
-- [ ] Kasir (Admin) dapat mengedit menu.
-- [ ] Kasir (Admin) dapat menghapus menu.
+- Kasir (Admin) dapat login ke situs web cafe.
+- Kasir (Admin) dapat menambahkan menu.
+- Kasir (Admin) dapat mengedit menu.
+- Kasir (Admin) dapat menghapus menu.
 
 ---
 
@@ -60,12 +60,12 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 
 **Acceptance Criteria:**
 
-- [ ] Pelanggan dapat melihat daftar meja yang tersedia di cafe secara online.
-- [ ] Pelanggan dapat melihat menu yang tersedia.
-- [ ] Pelanggan dapat menambahkan menu ke keranjang.
-- [ ] Pelanggan dapat mengorder menu.
-- [ ] Pelanggan dapat membayar pesanan melalui dynamic QRIS.
-- [ ] Pelanggan bisa melihat pesanannya ada di urutan ke berapa.
+- Pelanggan dapat melihat daftar meja yang tersedia di cafe secara online.
+- Pelanggan dapat melihat menu yang tersedia.
+- Pelanggan dapat menambahkan menu ke keranjang.
+- Pelanggan dapat mengorder menu.
+- Pelanggan dapat membayar pesanan melalui dynamic QRIS.
+- Pelanggan bisa melihat pesanannya ada di urutan ke berapa.
 
 ---
 
@@ -78,6 +78,6 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 
 **Acceptance Criteria:**
 
-- [ ] Kasir (Admin) dapat login ke situs web cafe.
-- [ ] Kasir (Admin) dapat melihat daftar pesanan yang masuk melalui halaman dashboard.
-- [ ] Kasir (Admin) dapat mengubah status pesanan menjadi "selesai".
+- Kasir (Admin) dapat login ke situs web cafe.
+- Kasir (Admin) dapat melihat daftar pesanan yang masuk melalui halaman dashboard.
+- Kasir (Admin) dapat mengubah status pesanan menjadi "selesai".
