@@ -28,6 +28,8 @@ export const up = async (pgm) => {
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-export const down = (pgm) => {
-    pgm.sql(`DELETE from users WHERE username = ${process.env.ADMIN_USERNAME}`);
+export const down = async (pgm) => {
+    await pgm.db.query(
+        `DELETE FROM users WHERE username = $1`,
+        [process.env.ADMIN_USERNAME]);
 };

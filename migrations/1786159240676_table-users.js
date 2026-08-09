@@ -53,4 +53,5 @@ export const up = async (pgm) => {
  */
 export const down = (pgm) => {
     pgm.dropTable('users');
+    pgm.dropType('user_role');
 };
