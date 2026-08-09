@@ -8,3 +8,12 @@ export const addMenu = async (req, res) => {
 
     return response(res, 201, null, { addedMenus: result });
 }
+
+export const editMenu = async (req, rest) => {
+    const { name, price, description } = req.validated;
+    const { id } = req.params;
+
+    const result = await MenuRepositories.editMenu(id, name, price, description);
+
+    return response(rest, 201, null, { editedMenus: result });
+}

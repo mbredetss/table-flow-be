@@ -150,6 +150,7 @@ describe('HTTP Server', () => {
         });
 
         afterAll(async () => {
+            await AuthenticationsTableTestHelper.cleanTable();
             await MenusTableTestHelper.cleanTable();
         });
 
@@ -199,7 +200,88 @@ describe('HTTP Server', () => {
             expect(response.body).toHaveProperty('status', 'success');
             expect(response.body.data.addedMenus).toBeDefined();
         });
+    });
 
+    describe('when PUT /menus', () => {
+        let accessToken = null;
+        let menuId = null;
 
-    })
-})
+        beforeAll(async () => {
+            // login as admin to get access token
+            const loginResponse = await request(app)
+                .post('/authentications')
+                .send({
+                    username: process.env.ADMIN_USERNAME,
+                    password: process.env.ADMIN_PASSWORD,
+                });
+            accessToken = loginResponse.body.data.accessToken;
+
+            // added a menu to get menu id
+            const addMenuResponse = await request(app)
+                .post('/menus')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    name: 'Nasi Goreng',
+                    price: 15000,
+                    description: 'Nasi goreng spesial dengan telur dan ayam',
+                });
+            menuId = addMenuResponse.body.data.addedMenus;
+        });
+
+        afterAll(async () => {
+            await AuthenticationsTableTestHelper.cleanTable();
+            await MenusTableTestHelper.cleanTable();
+        });
+
+        it('should response 400 when request payload not contain needed property', async () => {
+            const response = await request(app)
+                .put(`/menus/${menuId}`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({});
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body).toHaveProperty('message');
+        });
+
+        it('should response 400 when request payload not meet data type specification', async () => {
+            const response = await request(app)
+                .put(`/menus/${menuId}`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    name: 123,
+                    price: 'not_a_number',
+                    description: 456,
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body).toHaveProperty('message');
+        });
+
+        it('should response 201 and edit menus correctly', async () => {
+            const response = await request(app)
+                .put(`/menus/${menuId}`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    name: 'Mie Goreng',
+                    price: 17000,
+                    description: 'Mie goreng spesial dengan telur dan ayam',
+                });
+
+            expect(response.status).toBe(201);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'success');
+            expect(response.body.data.editedMenus).toBeDefined();
+            expect(response.body.data.editedMenus.id).toBe(menuId);
+            expect(response.body.data.editedMenus.name).toBe('Mie Goreng');
+            expect(response.body.data.editedMenus.price).toBe(17000);
+            expect(response.body.data.editedMenus.description).toBe('Mie goreng spesial dengan telur dan ayam');
+        });
+    });
+});

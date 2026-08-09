@@ -21,6 +21,23 @@ class MenuRepositories {
 
         return result.rows[0].id;
     }
+
+    async editMenu(id, name, price, description) {
+        const query = {
+            text: `
+            UPDATE menus
+            SET name = $1, 
+                price = $2, 
+                description = $3
+            WHERE id = $4
+            RETURNING id, name, price, description`, 
+            values: [name, price, description, id], 
+        };
+
+        const result = await this.pool.query(query);
+
+        return result.rows[0];
+    }
 }
 
 export default new MenuRepositories();
