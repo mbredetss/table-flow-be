@@ -63,8 +63,7 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 - Pelanggan dapat melihat daftar meja yang tersedia di cafe secara online.
 - Pelanggan dapat melihat menu yang tersedia.
 - Pelanggan dapat menambahkan menu ke keranjang.
-- Pelanggan dapat mengorder menu.
-- Pelanggan dapat membayar pesanan melalui dynamic QRIS.
+- Pelanggan dapat mengorder menu dan membayar pesanan melalui dynamic QRIS.
 - Pelanggan bisa melihat pesanannya ada di urutan ke berapa.
 
 ---
