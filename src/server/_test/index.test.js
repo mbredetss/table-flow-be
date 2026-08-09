@@ -2,6 +2,7 @@ import request from 'supertest';
 import app from '../index.js';
 import AuthenticationsTableTestHelper from '../../../tests/AuthenticationsTableTestHelper.js';
 import MenusTableTestHelper from '../../../tests/MenusTableTestHelper.js';
+import { it } from 'vitest';
 
 describe('HTTP Server', () => {
     describe('when POST /authentications', () => {
@@ -202,7 +203,7 @@ describe('HTTP Server', () => {
         });
     });
 
-    describe('when PUT /menus', () => {
+    describe('when PUT /menus/{menuId}', () => {
         let accessToken = null;
         let menuId = null;
 
@@ -282,6 +283,60 @@ describe('HTTP Server', () => {
             expect(response.body.data.editedMenus.name).toBe('Mie Goreng');
             expect(response.body.data.editedMenus.price).toBe(17000);
             expect(response.body.data.editedMenus.description).toBe('Mie goreng spesial dengan telur dan ayam');
+        });
+    });
+
+    describe('when DELETE /menus/{menuId}', () => {
+        let accessToken = null;
+        let menuId = null;
+
+        beforeAll(async () => {
+            // login as admin to get access token
+            const loginResponse = await request(app)
+                .post('/authentications')
+                .send({
+                    username: process.env.ADMIN_USERNAME,
+                    password: process.env.ADMIN_PASSWORD,
+                });
+            accessToken = loginResponse.body.data.accessToken;
+
+            // added a menu to get menu id
+            const addMenuResponse = await request(app)
+                .post('/menus')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    name: 'Nasi Goreng',
+                    price: 15000,
+                    description: 'Nasi goreng spesial dengan telur dan ayam',
+                });
+            menuId = addMenuResponse.body.data.addedMenus;
+        });
+
+        afterAll(async () => {
+            await AuthenticationsTableTestHelper.cleanTable();
+            await MenusTableTestHelper.cleanTable();
+        });
+
+        it('should response 404 when menuId not found', async () => {
+            const response = await request(app)
+                .delete(`/menus/nonexistent-menu-id`)
+                .set('Authorization', `Bearer ${accessToken}`);
+
+            expect(response.status).toBe(404);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+        });
+
+        it('should response 200 and delete menus correctly', async () => {
+            const response = await request(app)
+                .delete(`/menus/${menuId}`)
+                .set('Authorization', `Bearer ${accessToken}`);
+
+            expect(response.status).toBe(200);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'success');
         });
     });
 });

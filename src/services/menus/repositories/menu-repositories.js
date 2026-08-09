@@ -38,6 +38,20 @@ class MenuRepositories {
 
         return result.rows[0];
     }
+
+    async deleteMenu(id) {
+        const query = {
+            text: `
+            DELETE FROM menus
+            WHERE id = $1
+            RETURNING id`, 
+            values: [id], 
+        };
+
+        const result = await this.pool.query(query);
+
+        return result.rows;
+    }
 }
 
 export default new MenuRepositories();
