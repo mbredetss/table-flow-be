@@ -29,16 +29,16 @@ export const up = async (pgm) => {
             type: 'user_role',
             notNull: true,
         },
-        fullName: {
+        full_name: {
             type: 'VARCHAR(140)',
             notNull: true
         },
-        createdAt: {
+        created_at: {
             type: 'TIMESTAMPTZ',
             notNull: true,
             default: pgm.func('CURRENT_TIMESTAMP')
         },
-        updatedAt: {
+        updated_at: {
             type: 'TIMESTAMPTZ',
             notNull: true,
             default: pgm.func('CURRENT_TIMESTAMP')
