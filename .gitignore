@@ -1,3 +1,6 @@
 node_modules/
 .env
 .test.env
+PRD-manajemen-menu.md
+PRD-pemantauan-pesanan.md
+PRD-pemesanan-dan-pembayaran.md
