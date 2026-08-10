@@ -8,7 +8,7 @@ Aplikasi ini memungkinkan pelanggan untuk **memesan dan membayar menu** (melalui
 
 Mempermudah pelanggan dalam memesan makanan dan minuman di cafe. Dengan aplikasi ini:
 
-- Pelanggan **tidak perlu mengantri** di kasir — cukup scan QR code di meja dan mulai memesan.
+- Pelanggan **tidak perlu mengantri** di kasir — cukup memesan melalui website cafe.
 - Pelanggan dapat melihat status pesanan 
 - Barista dapat **memantau pesanan** secara real-time dan memastikan pesanan dikirim dengan cepat dan akurat.
 
