@@ -9,6 +9,7 @@ Aplikasi ini memungkinkan pelanggan untuk **memesan dan membayar menu** (melalui
 Mempermudah pelanggan dalam memesan makanan dan minuman di cafe. Dengan aplikasi ini:
 
 - Pelanggan **tidak perlu mengantri** di kasir — cukup scan QR code di meja dan mulai memesan.
+= Pelanggan dapat melihat status pesanan 
 - Barista dapat **memantau pesanan** secara real-time dan memastikan pesanan dikirim dengan cepat dan akurat.
 
 ## Tech Stack
@@ -60,7 +61,6 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 
 **Acceptance Criteria:**
 
-- Pelanggan dapat melihat daftar meja yang tersedia di cafe secara online.
 - Pelanggan dapat melihat menu yang tersedia.
 - Pelanggan dapat menambahkan menu ke keranjang.
 - Pelanggan dapat mengorder menu dan membayar pesanan melalui dynamic QRIS.
@@ -68,7 +68,7 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 
 ---
 
-### Epic 3 — Pemantauan Pesanan oleh Kasir (Admin)
+### Epic 3 — Pemantauan Pesanan
 
 | Item              | Detail                                                                                                                   |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -80,3 +80,4 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 - Kasir (Admin) dapat login ke situs web cafe.
 - Kasir (Admin) dapat melihat daftar pesanan yang masuk melalui halaman dashboard.
 - Kasir (Admin) dapat mengubah status pesanan menjadi "selesai".
+- Pelanggan dapat memantau status pesanan.
