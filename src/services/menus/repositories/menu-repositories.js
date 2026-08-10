@@ -52,6 +52,16 @@ class MenuRepositories {
 
         return result.rows;
     }
+
+    async getMenus() {
+        const query = {
+            text: 'SELECT * FROM menus',
+        };
+
+        const result = await this.pool.query(query);
+
+        return result.rows;
+    }
 }
 
 export default new MenuRepositories();

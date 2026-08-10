@@ -339,4 +339,48 @@ describe('HTTP Server', () => {
             expect(response.body).toHaveProperty('status', 'success');
         });
     });
+
+    describe('when GET /menus', () => {
+        let accessToken = null;
+
+        beforeAll(async () => {
+            // login as admin to get access token
+            const loginResponse = await request(app)
+                .post('/authentications')
+                .send({
+                    username: process.env.ADMIN_USERNAME,
+                    password: process.env.ADMIN_PASSWORD,
+                });
+            accessToken = loginResponse.body.data.accessToken;
+
+            // added a menu
+            const addMenuResponse = await request(app)
+                .post('/menus')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    name: 'Nasi Goreng',
+                    price: 15000,
+                    description: 'Nasi goreng spesial dengan telur dan ayam',
+                });
+        });
+
+        afterAll(async () => {
+            await AuthenticationsTableTestHelper.cleanTable();
+            await MenusTableTestHelper.cleanTable();
+        });
+
+        it('should response 200 and get menus correctly', async () => {
+            const response = await request(app).get('/menus');
+
+            expect(response.status).toBe(200);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'success');
+            expect(response.body.data.menus).toHaveLength(1);
+            expect(response.body.data.menus[0]).toHaveProperty('id');
+            expect(response.body.data.menus[0]).toHaveProperty('name');
+            expect(response.body.data.menus[0]).toHaveProperty('price');
+            expect(response.body.data.menus[0]).toHaveProperty('description');
+        });
+    });
 });

@@ -27,3 +27,9 @@ export const deleteMenu = async (req, res) => {
 
     return response(res, 200, 'Menu berhasil dihapus', null);
 }
+
+export const getMenus = async (req, res) => {
+    const result = await MenuRepositories.getMenus();
+
+    return response(res, 200, null, { menus: result });
+}
