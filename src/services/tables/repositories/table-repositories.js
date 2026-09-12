@@ -19,7 +19,7 @@ class TableRepositories {
         await this.pool.query(query);
     }
 
-    async getTableCount() {
+    async getAllTable() {
         const result = await this.pool.query('SELECT * FROM tables;');
 
         return result.rows;
