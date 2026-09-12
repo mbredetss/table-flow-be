@@ -8,7 +8,7 @@ export const setTableCount = async (req, res) => {
         await tableRepositories.addTable(`table-${i}`);
     }
 
-    const tables = await tableRepositories.getTableCount();
+    const tables = await tableRepositories.getAllTable();
 
     return response(res, 200, null, { tables });
 }
