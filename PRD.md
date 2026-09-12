@@ -82,7 +82,7 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 - Kasir (Admin) dapat mengubah status pesanan menjadi "selesai".
 - Pelanggan dapat memantau status pesanan.
 
-### Epic 4 — Manajemen Menu oleh Kasir (Admin)
+### Epic 4 — Manajemen Jumlah Meja oleh Kasir (Admin)
 
 | Item              | Detail                                                                                                        |
 | ----------------- | ------------------------------------------------------------------------------------------------------------- |
