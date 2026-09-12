@@ -13,6 +13,7 @@ export const up = (pgm) => {
         id: {
             type: 'CHAR(22)', 
             notNull: true, 
+            primaryKey: true, 
         }, 
         name: {
             type: 'TEXT', 

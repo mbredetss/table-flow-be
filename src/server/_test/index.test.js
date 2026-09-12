@@ -2,7 +2,8 @@ import request from 'supertest';
 import app from '../index.js';
 import AuthenticationsTableTestHelper from '../../../tests/AuthenticationsTableTestHelper.js';
 import MenusTableTestHelper from '../../../tests/MenusTableTestHelper.js';
-import { it } from 'vitest';
+import { describe, it } from 'vitest';
+import TablesTableTestHelper from '../../../tests/TablesTableTestHelper.js';
 
 describe('HTTP Server', () => {
     describe('when POST /authentications', () => {
@@ -354,7 +355,7 @@ describe('HTTP Server', () => {
             accessToken = loginResponse.body.data.accessToken;
 
             // added a menu
-            const addMenuResponse = await request(app)
+            await request(app)
                 .post('/menus')
                 .set('Authorization', `Bearer ${accessToken}`)
                 .send({
@@ -381,6 +382,197 @@ describe('HTTP Server', () => {
             expect(response.body.data.menus[0]).toHaveProperty('name');
             expect(response.body.data.menus[0]).toHaveProperty('price');
             expect(response.body.data.menus[0]).toHaveProperty('description');
+        });
+    });
+
+    describe('when POST /tables', () => {
+        let accessToken = null;
+
+        beforeAll(async () => {
+            // login as admin to get access token
+            const loginResponse = await request(app)
+                .post('/authentications')
+                .send({
+                    username: process.env.ADMIN_USERNAME,
+                    password: process.env.ADMIN_PASSWORD,
+                });
+            accessToken = loginResponse.body.data.accessToken;
+        });
+
+        afterAll(async () => {
+            await AuthenticationsTableTestHelper.cleanTable();
+            await MenusTableTestHelper.cleanTable();
+            await TablesTableTestHelper.cleanTable();
+        });
+
+        it('should response 401 when users not login yet', async () => {
+            const response = await request(app)
+                .post('/tables')
+                .send({
+                    tableCount: 10,
+                });
+
+            expect(response.status).toBe(401);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('Unauthorized');
+        });
+
+        it('should response 400 when request payload not contain needed property', async () => {
+            const response = await request(app)
+                .post('/tables')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({});
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe(`"tableCount" is required`);
+        });
+
+        it('should response 400 when request payload not meet data type spesification', async () => {
+            const response = await request(app)
+                .post('/tables')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    tableCount: 'not a number',
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe(`"tableCount" must be a number`);
+        });
+
+        it('should response 201 and set table correctly', async () => {
+            const response = await request(app)
+                .post('/tables')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    tableCount: 10,
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'success');
+            expect(response.body.data.tables).toHaveLength(10);
+        });
+    });
+
+    describe('when POST /orders', () => {
+        let menuId = null;
+
+        beforeAll(async () => {
+            // login as admin to get access token
+            const loginResponse = await request(app)
+                .post('/authentications')
+                .send({
+                    username: process.env.ADMIN_USERNAME,
+                    password: process.env.ADMIN_PASSWORD,
+                });
+            const accessToken = loginResponse.body.data.accessToken;
+
+            // add some menu
+            const response = await request(app)
+                .post('/menus')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    name: 'Nasi Goreng',
+                    price: 15000,
+                    description: 'Nasi goreng spesial dengan telur dan ayam',
+                });
+            menuId = response.body.data.addedMenus;
+        });
+
+        afterAll(async () => {
+            await AuthenticationsTableTestHelper.cleanTable();
+            await MenusTableTestHelper.cleanTable();
+        });
+
+        it('should response 400 when request payload not contain needed property', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({});
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('message');
+        });
+
+        it('should response 400 when request payload not meet data type spesification', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({
+                    menuId: 'not a array',
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('');
+        });
+
+        it('should response 400 when request menuId payload not contain atleast 1 menu', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({
+                    menuId: [],
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('');
+        });
+
+        it('should response 400 when request menuId array payload not meet data spesification', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({
+                    menuId: [5],
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('');
+        });
+
+        it('should response 200 and get qr image url', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({
+                    menuId: [menuId],
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'success');
+            expect(response.body.data.qrImageURL).toBeDefined();
+        });
+
+        it('should response 200 and order menus correctly', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({
+                    menuId: [menuId],
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'success');
+            expect(response.body.data.orderMenu[0].id).toBe(menuId);
         });
     });
 });

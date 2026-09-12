@@ -11,12 +11,17 @@ export const shorthands = undefined;
 export const up = (pgm) => {
     pgm.createTable('orders', {
         table_id: {
-
+            type: 'CHAR(22)', 
+            references: 'tables', 
         }, 
         menu_id: {
             type: 'CHAR(22)', 
             references: 'menus', 
         }, 
+        quantity: {
+            type: 'SMALLINT', 
+            notNull: true, 
+        }
     });
 };
 
