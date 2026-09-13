@@ -19,6 +19,19 @@ class TableRepositories {
         await this.pool.query(query);
     }
 
+    async getTableById(id) {
+        const query = {
+            text: `
+            SELECT * FROM tables
+            WHERE id = $1 
+            `, 
+            values: [id]
+        };
+        const result = await this.pool.query(query);
+
+        return result.rows;
+    }
+
     async getAllTable() {
         const result = await this.pool.query('SELECT * FROM tables;');
 
