@@ -62,6 +62,20 @@ class MenuRepositories {
 
         return result.rows;
     }
+
+    async getMenuById(id) {
+        const query = {
+            text: `
+            SELECT * FROM menus
+            WHERE id = $1
+            `, 
+            values: [id], 
+        };
+
+        const result = await this.pool.query(query);
+
+        return result.rows;
+    }
 }
 
 export default new MenuRepositories();
