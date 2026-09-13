@@ -465,6 +465,7 @@ describe('HTTP Server', () => {
 
     describe('when POST /orders', () => {
         let menuId = null;
+        let tableId = null;
 
         beforeAll(async () => {
             // login as admin to get access token
@@ -477,7 +478,7 @@ describe('HTTP Server', () => {
             const accessToken = loginResponse.body.data.accessToken;
 
             // add some menu
-            const response = await request(app)
+            const addMenuresponse = await request(app)
                 .post('/menus')
                 .set('Authorization', `Bearer ${accessToken}`)
                 .send({
@@ -485,12 +486,20 @@ describe('HTTP Server', () => {
                     price: 15000,
                     description: 'Nasi goreng spesial dengan telur dan ayam',
                 });
-            menuId = response.body.data.addedMenus;
+            menuId = addMenuresponse.body.data.addedMenus;
+
+            // set table count
+            const setTableCountResult = await request(app)
+                .post('/tables')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({ tableCount: 1, });
+            tableId = setTableCountResult.body.data.tables[0].id;
         });
 
         afterAll(async () => {
             await AuthenticationsTableTestHelper.cleanTable();
             await MenusTableTestHelper.cleanTable();
+            await TablesTableTestHelper.cleanTable();
         });
 
         it('should response 400 when request payload not contain needed property', async () => {
@@ -502,77 +511,100 @@ describe('HTTP Server', () => {
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'fail');
-            expect(response.body.message).toBe('message');
+            expect(response.body.message).toBe('"tableId" is required');
         });
 
         it('should response 400 when request payload not meet data type spesification', async () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
-                    menuId: 'not a array',
+                    tableId: 'not a number', 
+                    orderList: 'not a array',
                 });
 
             expect(response.status).toBe(400);
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'fail');
-            expect(response.body.message).toBe('');
+            expect(response.body.message).toBe('"orderList" must be an array');
         });
 
         it('should response 400 when request menuId payload not contain atleast 1 menu', async () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
-                    menuId: [],
+                    tableId, 
+                    orderList: [],
                 });
 
             expect(response.status).toBe(400);
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'fail');
-            expect(response.body.message).toBe('');
+            expect(response.body.message).toBe('"orderList" must contain at least 1 items');
+        });
+
+        it('should response 404 when table is not found', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({
+                    tableId: 'table not found', 
+                    orderList: [menuId],
+                });
+
+            expect(response.status).toBe(404);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('tabel tidak ditemukan!');
+        });
+
+        it('should response 404 when menu is not found', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({
+                    tableId, 
+                    orderList: ['not found menu'],
+                });
+
+            expect(response.status).toBe(404);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('menu tidak ditemukan!');
         });
 
         it('should response 400 when request menuId array payload not meet data spesification', async () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
-                    menuId: [5],
+                    tableId,
+                    orderList: [5],
                 });
 
             expect(response.status).toBe(400);
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'fail');
-            expect(response.body.message).toBe('');
+            expect(response.body.message).toBe('"orderList[0]" must be a string');
         });
 
-        it('should response 200 and get qr image url', async () => {
+        it('should response 200 and order correctly', async () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
-                    menuId: [menuId],
+                    tableId, 
+                    orderList: [menuId],
                 });
 
-            expect(response.status).toBe(400);
+            expect(response.status).toBe(200);
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'success');
-            expect(response.body.data.qrImageURL).toBeDefined();
-        });
-
-        it('should response 200 and order menus correctly', async () => {
-            const response = await request(app)
-                .post('/orders')
-                .send({
-                    menuId: [menuId],
-                });
-
-            expect(response.status).toBe(400);
-            expect(response.headers['content-type']).toMatch(/application\/json/);
-            expect(response.body).toBeTypeOf('object');
-            expect(response.body).toHaveProperty('status', 'success');
-            expect(response.body.data.orderMenu[0].id).toBe(menuId);
+            expect(response.body.data.orderDetail.qrImageURL).toBeDefined();
+            expect(response.body.data.orderDetail.tableId).toBe(tableId);
+            expect(response.body.data.orderDetail.order).toHaveLength(1);
+            expect(response.body.data.orderDetail.orderTotal).toBe(15000);
         });
     });
 });
