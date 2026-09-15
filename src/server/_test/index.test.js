@@ -604,7 +604,9 @@ describe('HTTP Server', () => {
             expect(response.body.data.orderDetail.qrImageURL).toBeDefined();
             expect(response.body.data.orderDetail.tableId).toBe(tableId);
             expect(response.body.data.orderDetail.order).toHaveLength(1);
-            expect(response.body.data.orderDetail.orderTotal).toBe(15000);
+            expect(response.body.data.orderDetail.APIChargeResponse.statusCode).toBeDefined();
+            expect(response.body.data.orderDetail.APIChargeResponse.orderId).toBeDefined();
+            expect(response.body.data.orderDetail.APIChargeResponse.grossAmount).toBe(15000);
         });
     });
 });
