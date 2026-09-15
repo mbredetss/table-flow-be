@@ -40,12 +40,19 @@ export const orderMenu = async (req, res) => {
     };
     const chargeResponse = await core.charge(parameter);
 
-    const orderDetail = {
-        qrImageURL: chargeResponse.actions[0].url,
-        tableId,
-        order: orderList,
-        orderTotal,
+    const [ generateQRCode, deeplinkRedirect ] = chargeResponse.actions;
+    const { status_code, gross_amount, order_id } = chargeResponse;
+    const APIChargeResponse = {
+        statusCode: status_code, 
+        grossAmount: Number(gross_amount), 
+        orderId: order_id, 
     };
-    
+    const orderDetail = {
+        qrImageURL: process.NODE_ENV !== 'production' ? deeplinkRedirect.url : generateQRCode.url,
+        tableId,
+        order: orderList, 
+        APIChargeResponse, 
+    };
+
     return response(res, 200, null, { orderDetail });
 }
