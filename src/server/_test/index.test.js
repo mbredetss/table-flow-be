@@ -1,9 +1,11 @@
 import request from 'supertest';
+import crypto from 'crypto';
 import app from '../index.js';
 import AuthenticationsTableTestHelper from '../../../tests/AuthenticationsTableTestHelper.js';
 import MenusTableTestHelper from '../../../tests/MenusTableTestHelper.js';
 import { describe, it } from 'vitest';
 import TablesTableTestHelper from '../../../tests/TablesTableTestHelper.js';
+import OrdersTableTestHelper from '../../../tests/OrdersTableTestHelper.js';
 
 describe('HTTP Server', () => {
     describe('when POST /authentications', () => {
@@ -498,8 +500,6 @@ describe('HTTP Server', () => {
 
         afterAll(async () => {
             await AuthenticationsTableTestHelper.cleanTable();
-            await MenusTableTestHelper.cleanTable();
-            await TablesTableTestHelper.cleanTable();
         });
 
         it('should response 400 when request payload not contain needed property', async () => {
@@ -518,38 +518,61 @@ describe('HTTP Server', () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
-                    tableId: 'not a number', 
-                    orderList: 'not a array',
+                    tableId: 'not a number',
+                    orders: 'not a array'
                 });
 
             expect(response.status).toBe(400);
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'fail');
-            expect(response.body.message).toBe('"orderList" must be an array');
+            expect(response.body.message).toBe('"orders" must be an array');
+        });
+
+        it('should response 400 when array orders not meet data type spesification', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({
+                    tableId: 'not a number',
+                    orders: [
+                        {
+                            menuId: true,
+                            quantity: 'not a number'
+                        }
+                    ],
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('"orders[0].menuId" must be a string');
         });
 
         it('should response 400 when request menuId payload not contain atleast 1 menu', async () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
-                    tableId, 
-                    orderList: [],
+                    tableId,
+                    orders: [],
                 });
 
             expect(response.status).toBe(400);
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'fail');
-            expect(response.body.message).toBe('"orderList" must contain at least 1 items');
+            expect(response.body.message).toBe('"orders" must contain at least 1 items');
         });
 
         it('should response 404 when table is not found', async () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
-                    tableId: 'table not found', 
-                    orderList: [menuId],
+                    tableId: 'table not found',
+                    orders: [{
+                        menuId,
+                        quantity: 4,
+                    }],
                 });
 
             expect(response.status).toBe(404);
@@ -563,8 +586,11 @@ describe('HTTP Server', () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
-                    tableId, 
-                    orderList: ['not found menu'],
+                    tableId,
+                    orders: [{
+                        menuId: 'not found menu',
+                        quantity: 3,
+                    }],
                 });
 
             expect(response.status).toBe(404);
@@ -574,27 +600,62 @@ describe('HTTP Server', () => {
             expect(response.body.message).toBe('menu tidak ditemukan!');
         });
 
-        it('should response 400 when request menuId array payload not meet data spesification', async () => {
+        it('should response 400 when request orders array payload not meet data spesification', async () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
                     tableId,
-                    orderList: [5],
+                    orders: [5],
                 });
 
             expect(response.status).toBe(400);
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'fail');
-            expect(response.body.message).toBe('"orderList[0]" must be a string');
+            expect(response.body.message).toBe('"orders[0]" must be of type object');
+        });
+
+        it('should response 400 when orders request value payload not meet data spesification', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({
+                    tableId,
+                    orders: [{
+                        menuId: 4,
+                    }],
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('"orders[0].menuId" must be a string');
+        });
+
+        it('should response 400 when orders request value payload not contain needed property', async () => {
+            const response = await request(app)
+                .post('/orders')
+                .send({
+                    tableId,
+                    orders: [{}],
+                });
+
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('"orders[0].menuId" is required');
         });
 
         it('should response 200 and order correctly', async () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
-                    tableId, 
-                    orderList: [menuId],
+                    tableId,
+                    orders: [{
+                        menuId,
+                        quantity: 3,
+                    }],
                 });
 
             expect(response.status).toBe(200);
@@ -603,10 +664,119 @@ describe('HTTP Server', () => {
             expect(response.body).toHaveProperty('status', 'success');
             expect(response.body.data.orderDetail.qrImageURL).toBeDefined();
             expect(response.body.data.orderDetail.tableId).toBe(tableId);
-            expect(response.body.data.orderDetail.order).toHaveLength(1);
-            expect(response.body.data.orderDetail.APIChargeResponse.statusCode).toBeDefined();
-            expect(response.body.data.orderDetail.APIChargeResponse.orderId).toBeDefined();
-            expect(response.body.data.orderDetail.APIChargeResponse.grossAmount).toBe(15000);
+            expect(response.body.data.orderDetail.orders).toHaveLength(1);
+            expect(response.body.data.orderDetail.orderId).toBeDefined();
+            expect(response.body.data.orderDetail.grossAmount).toBe(45000);
+        });
+    });
+
+    describe('when POST /notifications', () => {
+        let menuId = null;
+        let tableId = null;
+        let orderId = null;
+        let grossAmount = null;
+
+        beforeAll(async () => {
+            // login as admin to get access token
+            const loginResponse = await request(app)
+                .post('/authentications')
+                .send({
+                    username: process.env.ADMIN_USERNAME,
+                    password: process.env.ADMIN_PASSWORD,
+                });
+            const accessToken = loginResponse.body.data.accessToken;
+
+            // add some menu
+            const addMenuresponse = await request(app)
+                .post('/menus')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    name: 'Nasi Goreng',
+                    price: 15000,
+                    description: 'Nasi goreng spesial dengan telur dan ayam',
+                });
+            menuId = addMenuresponse.body.data.addedMenus;
+
+            // set table count
+            const setTableCountResult = await request(app)
+                .post('/tables')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({ tableCount: 1, });
+            tableId = setTableCountResult.body.data.tables[0].id;
+
+            // order some menu
+            const orderResponse = await request(app)
+                .post('/orders')
+                .send({
+                    tableId,
+                    orders: [{
+                        menuId,
+                        quantity: 2,
+                    }],
+                });
+
+            orderId = orderResponse.body.data.orderDetail.orderId;
+            grossAmount = orderResponse.body.data.orderDetail.grossAmount;
+
+            setTimeout(() => {}, 10000)
+        });
+
+        afterAll(async () => {
+            await AuthenticationsTableTestHelper.cleanTable();
+            await OrdersTableTestHelper.cleanTable();
+            await MenusTableTestHelper.cleanTable();
+            await TablesTableTestHelper.cleanTable();
+        });
+
+        it('should response 403 when given invalid signature key payload', async () => {
+            const serverKey = 'invalid server key';
+            const rawString = orderId + '200' + grossAmount + serverKey;
+            const signatureKey = crypto
+                .createHash('sha512')
+                .update(rawString)
+                .digest('hex');
+
+            const response = await request(app)
+                .post('/notifications')
+                .send({
+                    order_id: orderId,
+                    status_code: 200,
+                    gross_amount: grossAmount,
+                    signature_key: signatureKey,
+                    transaction_status: 'settlement',
+                    fraud_status: 'accept',
+                });
+
+            expect(response.status).toBe(403);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('signature key tidak valid!');
+        });
+
+        it('should response 200 and handle midtrans notification correctly', async () => {
+            const serverKey = process.env.AUTH_SERVER;
+            const rawString = orderId + '200' + grossAmount + serverKey;
+            const signatureKey = crypto
+                .createHash('sha512')
+                .update(rawString)
+                .digest('hex');
+
+            const response = await request(app)
+                .post('/notifications')
+                .send({
+                    order_id: orderId,
+                    status_code: 200,
+                    gross_amount: grossAmount,
+                    signature_key: signatureKey,
+                    transaction_status: 'settlement',
+                    fraud_status: 'accept',
+                });
+
+            expect(response.status).toBe(200);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'success');
         });
     });
 });
