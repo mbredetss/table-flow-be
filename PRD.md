@@ -62,9 +62,7 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 **Acceptance Criteria:**
 
 - Pelanggan dapat melihat menu yang tersedia.
-- Pelanggan dapat menambahkan menu ke keranjang.
 - Pelanggan dapat mengorder menu dan membayar pesanan melalui dynamic QRIS.
-- Pelanggan bisa melihat pesanannya ada di urutan ke berapa.
 
 ---
 
@@ -77,7 +75,6 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 
 **Acceptance Criteria:**
 
-- Kasir (Admin) dapat login ke situs web cafe.
 - Kasir (Admin) dapat melihat daftar pesanan yang masuk melalui halaman dashboard.
 - Kasir (Admin) dapat mengubah status pesanan menjadi "selesai".
 - Pelanggan dapat memantau status pesanan.
@@ -91,7 +88,4 @@ Pengguna tidak perlu lagi ke kasir untuk memesan makanan dan membayar pesanan. S
 
 **Acceptance Criteria:**
 
-- Kasir (Admin) dapat login ke situs web cafe.
 - Kasir (Admin) dapat menentukan jumlah meja.
-- Kasir (Admin) dapat menambahkan meja baru.
-- Kasir (Admin) dapat mengurangi jumlah meja.
