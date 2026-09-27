@@ -12,7 +12,7 @@ export const up = (pgm) => {
     pgm.createTable('tables', {
         id: {
             type: 'CHAR(22)', 
-            primaryKey: true
+            primaryKey: true,
         }, 
         name: {
             type: 'CHAR(50)', 

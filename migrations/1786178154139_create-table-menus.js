@@ -11,19 +11,21 @@ export const shorthands = undefined;
 export const up = (pgm) => {
     pgm.createTable('menus', {
         id: {
-            type: 'CHAR(22)', 
-            notNull: true, 
-            primaryKey: true, 
-        }, 
+            type: 'CHAR(22)',
+            notNull: true,
+            primaryKey: true,
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE',
+        },
         name: {
-            type: 'TEXT', 
-            notNull: true, 
-        }, 
+            type: 'TEXT',
+            notNull: true,
+        },
         price: {
-            type: 'integer', 
-            notNull: true, 
-            default: 0, 
-        }, 
+            type: 'integer',
+            notNull: true,
+            default: 0,
+        },
         description: {
             type: 'TEXT',
         }

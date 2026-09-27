@@ -9,7 +9,13 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
+    pgm.createType('order_status', ['success', 'failure', 'pending']);
+
     pgm.createTable('orders', {
+        id: {
+            type: 'CHAR(30)', 
+            notNull: true, 
+        }, 
         table_id: {
             type: 'CHAR(22)', 
             references: 'tables', 
@@ -21,6 +27,10 @@ export const up = (pgm) => {
         quantity: {
             type: 'SMALLINT', 
             notNull: true, 
+        }, 
+        status: {
+            type: 'order_status', 
+            default: 'pending'
         }
     });
 };
@@ -30,4 +40,7 @@ export const up = (pgm) => {
  * @param run {() => void | undefined}
  * @returns {Promise<void> | void}
  */
-export const down = (pgm) => { };
+export const down = (pgm) => {
+    pgm.dropTable('orders');
+    pgm.dropType('order_status')
+};

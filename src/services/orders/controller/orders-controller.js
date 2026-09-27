@@ -3,9 +3,10 @@ import { response } from "../../../utils/index.js";
 import menuRepositories from "../../menus/repositories/menu-repositories.js";
 import tableRepositories from "../../tables/repositories/table-repositories.js";
 import core from "../payment/payment-gateway-config.js";
+import orderRepositories from "../repositories/order-repositories.js";
 
 export const orderMenu = async (req, res) => {
-    const { tableId, orderList } = req.validated;
+    const { tableId, orders } = req.validated;
 
     // check table exist
     const getTableResult = await tableRepositories.getTableById(tableId);
@@ -14,21 +15,21 @@ export const orderMenu = async (req, res) => {
 
     // check menu exist
     let isMenuExistance = null;
-    for (let menuId of orderList) {
-        const getMenuResult = await menuRepositories.getMenuById(menuId);
+    for (let order of orders) {
+        const getMenuResult = await menuRepositories.getMenuById(order.menuId);
 
         isMenuExistance = getMenuResult.length > 0 ? true : false;
     }
     if (!isMenuExistance) return response(res, 404, 'menu tidak ditemukan!', null);
 
     const prices = await Promise.all(
-        orderList.map(async (menu) => {
-            const result = await menuRepositories.getMenuById(menu);
+        orders.map(async (order) => {
+            const result = await menuRepositories.getMenuById(order.menuId);
 
-            return result[0].price;
+            return result[0].price * order.quantity;
         })
     );
-    const orderTotal = prices.reduce((total, price) => total + price, 0)
+    const orderTotal = prices.reduce((total, price) => total + price, 0);
     const orderId = `order-${nanoid(16)}`;
 
     const parameter = {
@@ -40,19 +41,21 @@ export const orderMenu = async (req, res) => {
     };
     const chargeResponse = await core.charge(parameter);
 
-    const [ generateQRCode, deeplinkRedirect ] = chargeResponse.actions;
-    const { status_code, gross_amount, order_id } = chargeResponse;
-    const APIChargeResponse = {
-        statusCode: status_code, 
-        grossAmount: Number(gross_amount), 
-        orderId: order_id, 
-    };
+    for (let order of orders) {
+        await orderRepositories.addOrder(orderId, tableId, order.menuId, order.quantity);
+    }
+
+    const generateQRCode = chargeResponse.actions[0];
+    const deeplinkRedirect = chargeResponse.actions[2];
     const orderDetail = {
         qrImageURL: process.NODE_ENV !== 'production' ? deeplinkRedirect.url : generateQRCode.url,
         tableId,
-        order: orderList, 
-        APIChargeResponse, 
+        orderId,
+        orders,
+        grossAmount: orderTotal,
     };
+
+    if (process.NODE_ENV !== 'production') console.log(chargeResponse.actions);
 
     return response(res, 200, null, { orderDetail });
 }
