@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { response } from "../../../utils/index.js";
+import { clients, response } from "../../../utils/index.js";
 import menuRepositories from "../../menus/repositories/menu-repositories.js";
 import tableRepositories from "../../tables/repositories/table-repositories.js";
 import core from "../payment/payment-gateway-config.js";
@@ -55,7 +55,20 @@ export const orderMenu = async (req, res) => {
         grossAmount: orderTotal,
     };
 
-    if (process.NODE_ENV !== 'production') console.log(chargeResponse.actions);
-
     return response(res, 200, null, { orderDetail });
+}
+
+export const getOrder = async (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    
+    res.flushHeaders();
+
+    clients.push(res);
+
+    req.on('close', () => {
+        const index = clients.indexOf(res);
+        clients.splice(index, 1);
+    });
 }
