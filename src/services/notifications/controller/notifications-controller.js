@@ -6,16 +6,12 @@ export const midTransNotifications = async (req, res) => {
 
     if (transaction_status == 'capture') {
         if (fraud_status == 'accept') {
-            await orderRepositories.updateOrderStatus(order_id, 'success');
+            await orderRepositories.updateOrderStatus(order_id, 'preparing');
             notifyBaristas(order_id);
         }
     } else if (transaction_status == 'settlement') {
-        await orderRepositories.updateOrderStatus(order_id, 'success');
+        await orderRepositories.updateOrderStatus(order_id, 'preparing');
         notifyBaristas(order_id);
-    } else if (transaction_status == 'cancel' ||
-        transaction_status == 'deny' ||
-        transaction_status == 'expire') {
-        await orderRepositories.updateOrderStatus(order_id, 'failure');
     }
 
     response(res, 200, 'success', null);
