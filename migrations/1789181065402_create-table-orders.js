@@ -9,7 +9,7 @@ export const shorthands = undefined;
  * @returns {Promise<void> | void}
  */
 export const up = (pgm) => {
-    pgm.createType('order_status', ['success', 'failure', 'pending']);
+    pgm.createType('transaction_status', ['success', 'failure', 'pending']);
 
     pgm.createTable('orders', {
         id: {
@@ -28,10 +28,14 @@ export const up = (pgm) => {
             type: 'SMALLINT', 
             notNull: true, 
         }, 
-        status: {
-            type: 'order_status', 
-            default: 'pending'
-        }
+        transaction_status: {
+            type: 'transaction_status', 
+            default: 'pending', 
+        }, 
+        isDeleted: {
+            type: 'BOOLEAN', 
+            default: false, 
+        }, 
     });
 };
 
@@ -42,5 +46,5 @@ export const up = (pgm) => {
  */
 export const down = (pgm) => {
     pgm.dropTable('orders');
-    pgm.dropType('order_status')
+    pgm.dropType('transaction_status');
 };
