@@ -671,61 +671,12 @@ describe('HTTP Server', () => {
     });
 
     describe('when POST /notifications', () => {
-        let menuId = null;
-        let tableId = null;
         let orderId = null;
         let grossAmount = null;
 
         beforeAll(async () => {
-            // login as admin to get access token
-            const loginResponse = await request(app)
-                .post('/authentications')
-                .send({
-                    username: process.env.ADMIN_USERNAME,
-                    password: process.env.ADMIN_PASSWORD,
-                });
-            const accessToken = loginResponse.body.data.accessToken;
-
-            // add some menu
-            const addMenuresponse = await request(app)
-                .post('/menus')
-                .set('Authorization', `Bearer ${accessToken}`)
-                .send({
-                    name: 'Nasi Goreng',
-                    price: 15000,
-                    description: 'Nasi goreng spesial dengan telur dan ayam',
-                });
-            menuId = addMenuresponse.body.data.addedMenus;
-
-            // set table count
-            const setTableCountResult = await request(app)
-                .post('/tables')
-                .set('Authorization', `Bearer ${accessToken}`)
-                .send({ tableCount: 1, });
-            tableId = setTableCountResult.body.data.tables[0].id;
-
-            // order some menu
-            const orderResponse = await request(app)
-                .post('/orders')
-                .send({
-                    tableId,
-                    orders: [{
-                        menuId,
-                        quantity: 2,
-                    }],
-                });
-
-            orderId = orderResponse.body.data.orderDetail.orderId;
-            grossAmount = orderResponse.body.data.orderDetail.grossAmount;
-
-            setTimeout(() => {}, 10000)
-        });
-
-        afterAll(async () => {
-            await AuthenticationsTableTestHelper.cleanTable();
-            await OrdersTableTestHelper.cleanTable();
-            await MenusTableTestHelper.cleanTable();
-            await TablesTableTestHelper.cleanTable();
+            orderId = 'order-123';
+            grossAmount = '45000';
         });
 
         it('should response 403 when given invalid signature key payload', async () => {
