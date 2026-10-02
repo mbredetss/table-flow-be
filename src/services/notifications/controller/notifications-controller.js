@@ -10,7 +10,7 @@ export const midTransNotifications = async (req, res) => {
             notifyBaristas(order_id);
         }
     } else if (transaction_status == 'settlement') {
-        await orderRepositories.updateOrderStatus(order_id, 'success');
+        await orderRepositories.updateOrderStatus(order_id, 'preparing');
         notifyBaristas(order_id);
     } else if (transaction_status == 'cancel' ||
         transaction_status == 'deny' ||
