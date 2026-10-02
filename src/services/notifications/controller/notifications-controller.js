@@ -6,7 +6,7 @@ export const midTransNotifications = async (req, res) => {
 
     if (transaction_status == 'capture') {
         if (fraud_status == 'accept') {
-            await orderRepositories.updateOrderStatus(order_id, 'success');
+            await orderRepositories.updateOrderStatus(order_id, 'preparing');
             notifyBaristas(order_id);
         }
     } else if (transaction_status == 'settlement') {
