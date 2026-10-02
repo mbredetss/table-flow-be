@@ -21,7 +21,7 @@ export const response = (res, statusCode, message, data) => {
 export const clients = [];
 
 export const notifyBaristas = async (orderId) => {
-  const orderList = await orderRepositories.getOrder(orderId);
+  const orderList = await orderRepositories.getOrderSSE(orderId);
 
   clients.forEach(client => {
     client.write(`data: ${JSON.stringify(orderList)}\n\n`);

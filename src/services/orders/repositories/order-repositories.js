@@ -30,7 +30,7 @@ class OrderRepositories {
         await this.pool.query(query);
     }
 
-    async getOrder(id) {
+    async getOrderSSE(id) {
         const query = {
             text: `
             SELECT menus.name as "menuName", orders.quantity as quantity
