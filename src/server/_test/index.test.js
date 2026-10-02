@@ -237,6 +237,24 @@ describe('HTTP Server', () => {
             await MenusTableTestHelper.cleanTable();
         });
 
+        it('should response 401 when not login yet', async () => {
+            const invalidAccessToken = 'invalid access token';
+            const response = await request(app)
+                .put(`/menus/${menuId}`)
+                .set('Authorization', `Bearer ${invalidAccessToken}`)
+                .send({
+                    name: 'Mie Goreng',
+                    price: 17000,
+                    description: 'Mie goreng spesial dengan telur dan ayam',
+                });
+
+            expect(response.status).toBe(401);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body).toHaveProperty('message');
+        });
+
         it('should response 400 when request payload not contain needed property', async () => {
             const response = await request(app)
                 .put(`/menus/${menuId}`)
@@ -848,7 +866,7 @@ describe('HTTP Server', () => {
             expect(eventData[0].menuName).toBe('Nasi Goreng');
             expect(eventData[0].quantity).toBe(2);
         });
-        
+
         it('should establish SSE connection and not receive order events', async () => {
             await request(app)
                 .post('/notifications')
