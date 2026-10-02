@@ -21,7 +21,7 @@ class OrderRepositories {
         const query = {
             text: `
             UPDATE orders
-            SET status = $2
+            SET transaction_status = $2
             WHERE id = $1
             `, 
             values: [id, status], 
