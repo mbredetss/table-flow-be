@@ -29,6 +29,21 @@ class OrderRepositories {
 
         await this.pool.query(query);
     }
+
+    async getOrder(id) {
+        const query = {
+            text: `
+            SELECT menus.name as "menuName", orders.quantity as quantity
+            FROM orders
+            JOIN menus ON menus.id = orders.menu_id
+            WHERE orders.id = $1
+            `, 
+            values: [id]
+        };
+        const result = await this.pool.query(query);
+
+        return result.rows;
+    }
 }
 
 export default new OrderRepositories();

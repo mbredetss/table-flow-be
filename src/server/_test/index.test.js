@@ -1,9 +1,9 @@
 import request from 'supertest';
 import crypto from 'crypto';
+import { EventSource } from 'eventsource';
 import app from '../index.js';
 import AuthenticationsTableTestHelper from '../../../tests/AuthenticationsTableTestHelper.js';
 import MenusTableTestHelper from '../../../tests/MenusTableTestHelper.js';
-import { describe, it } from 'vitest';
 import TablesTableTestHelper from '../../../tests/TablesTableTestHelper.js';
 import OrdersTableTestHelper from '../../../tests/OrdersTableTestHelper.js';
 
@@ -671,61 +671,12 @@ describe('HTTP Server', () => {
     });
 
     describe('when POST /notifications', () => {
-        let menuId = null;
-        let tableId = null;
         let orderId = null;
         let grossAmount = null;
 
         beforeAll(async () => {
-            // login as admin to get access token
-            const loginResponse = await request(app)
-                .post('/authentications')
-                .send({
-                    username: process.env.ADMIN_USERNAME,
-                    password: process.env.ADMIN_PASSWORD,
-                });
-            const accessToken = loginResponse.body.data.accessToken;
-
-            // add some menu
-            const addMenuresponse = await request(app)
-                .post('/menus')
-                .set('Authorization', `Bearer ${accessToken}`)
-                .send({
-                    name: 'Nasi Goreng',
-                    price: 15000,
-                    description: 'Nasi goreng spesial dengan telur dan ayam',
-                });
-            menuId = addMenuresponse.body.data.addedMenus;
-
-            // set table count
-            const setTableCountResult = await request(app)
-                .post('/tables')
-                .set('Authorization', `Bearer ${accessToken}`)
-                .send({ tableCount: 1, });
-            tableId = setTableCountResult.body.data.tables[0].id;
-
-            // order some menu
-            const orderResponse = await request(app)
-                .post('/orders')
-                .send({
-                    tableId,
-                    orders: [{
-                        menuId,
-                        quantity: 2,
-                    }],
-                });
-
-            orderId = orderResponse.body.data.orderDetail.orderId;
-            grossAmount = orderResponse.body.data.orderDetail.grossAmount;
-
-            setTimeout(() => {}, 10000)
-        });
-
-        afterAll(async () => {
-            await AuthenticationsTableTestHelper.cleanTable();
-            await OrdersTableTestHelper.cleanTable();
-            await MenusTableTestHelper.cleanTable();
-            await TablesTableTestHelper.cleanTable();
+            orderId = 'order-123';
+            grossAmount = '45000';
         });
 
         it('should response 403 when given invalid signature key payload', async () => {
@@ -777,6 +728,146 @@ describe('HTTP Server', () => {
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'success');
+        });
+    });
+
+    describe('when GET /orders (SSE)', () => {
+        let orderId;
+        let grossAmount;
+        let signatureKey;
+        let server;
+        let es;
+
+        beforeAll(async () => {
+            // login as admin to get access token
+            const loginResponse = await request(app)
+                .post('/authentications')
+                .send({
+                    username: process.env.ADMIN_USERNAME,
+                    password: process.env.ADMIN_PASSWORD,
+                });
+            const accessToken = loginResponse.body.data.accessToken;
+
+            // add some menu
+            const addMenuresponse = await request(app)
+                .post('/menus')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    name: 'Nasi Goreng',
+                    price: 15000,
+                    description: 'Nasi goreng spesial dengan telur dan ayam',
+                });
+            const menuId = addMenuresponse.body.data.addedMenus;
+
+            // set table count
+            const setTableCountResult = await request(app)
+                .post('/tables')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({ tableCount: 1, });
+            const tableId = setTableCountResult.body.data.tables[0].id;
+
+            // order some menu
+            const orderResult = await request(app).post('/orders').send({
+                tableId,
+                orders: [{ menuId, quantity: 2 }],
+            });
+            orderId = orderResult.body.data.orderDetail.orderId;
+            grossAmount = orderResult.body.data.orderDetail.grossAmount;
+
+            server = app.listen(0);
+            const port = server.address().port;
+
+            es = new EventSource(`http://localhost:${port}/orders`);
+
+            await new Promise((resolve) => {
+                es.onopen = resolve;
+            });
+
+            const serverKey = process.env.AUTH_SERVER;
+            const rawString = orderId + '200' + grossAmount + serverKey;
+            signatureKey = crypto
+                .createHash('sha512')
+                .update(rawString)
+                .digest('hex');
+        });
+
+        afterAll(async () => {
+            es.close();
+            server.close();
+            await AuthenticationsTableTestHelper.cleanTable();
+            await OrdersTableTestHelper.cleanTable();
+            await MenusTableTestHelper.cleanTable();
+            await TablesTableTestHelper.cleanTable();
+        });
+
+        it(`should establish SSE connection and receive order events when transaction status is 'settlement'`, async () => {
+            await request(app)
+                .post('/notifications')
+                .send({
+                    order_id: orderId,
+                    status_code: 200,
+                    gross_amount: grossAmount,
+                    signature_key: signatureKey,
+                    transaction_status: 'settlement',
+                });
+
+            const eventData = await new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => reject(new Error('Timeout')), 5000);
+                es.onmessage = (event) => {
+                    clearTimeout(timeout);
+                    resolve(JSON.parse(event.data));
+                };
+            });
+
+            expect(eventData).toHaveLength(1);
+            expect(eventData[0].menuName).toBe('Nasi Goreng');
+            expect(eventData[0].quantity).toBe(2);
+        });
+
+        it(`should establish SSE connection and receive order events when transaction status is 'settlement' and fraud status 'accept'`, async () => {
+            await request(app)
+                .post('/notifications')
+                .send({
+                    order_id: orderId,
+                    status_code: 200,
+                    gross_amount: grossAmount,
+                    signature_key: signatureKey,
+                    transaction_status: 'capture',
+                    fraud_status: 'accept',
+                });
+
+            const eventData = await new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => reject(new Error('Timeout')), 5000);
+                es.onmessage = (event) => {
+                    clearTimeout(timeout);
+                    resolve(JSON.parse(event.data));
+                };
+            });
+
+            expect(eventData).toHaveLength(1);
+            expect(eventData[0].menuName).toBe('Nasi Goreng');
+            expect(eventData[0].quantity).toBe(2);
+        });
+        
+        it('should establish SSE connection and not receive order events', async () => {
+            await request(app)
+                .post('/notifications')
+                .send({
+                    order_id: orderId,
+                    status_code: 200,
+                    gross_amount: grossAmount,
+                    signature_key: signatureKey,
+                    transaction_status: 'cancel',
+                });
+
+            let receivedEvent = false;
+            es.onmessage = () => {
+                receivedEvent = true;
+            };
+
+            await new Promise((resolve) => setTimeout(resolve, 4000));
+
+            expect(receivedEvent).toBe(false);
         });
     });
 });
