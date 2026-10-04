@@ -8,5 +8,6 @@ export const orderPayloadSchema = Joi.object({
         quantity: Joi.number().required(), 
     }))
     .min(1)
-    .required(),
+    .required(), 
+    status: Joi.string().required()
 });

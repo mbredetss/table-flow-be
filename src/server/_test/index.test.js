@@ -537,7 +537,8 @@ describe('HTTP Server', () => {
                 .post('/orders')
                 .send({
                     tableId: 'not a number',
-                    orders: 'not a array'
+                    orders: 'not a array', 
+                    status: 5, 
                 });
 
             expect(response.status).toBe(400);
@@ -557,7 +558,8 @@ describe('HTTP Server', () => {
                             menuId: true,
                             quantity: 'not a number'
                         }
-                    ],
+                    ], 
+                    status: 'unpaid', 
                 });
 
             expect(response.status).toBe(400);
@@ -567,12 +569,13 @@ describe('HTTP Server', () => {
             expect(response.body.message).toBe('"orders[0].menuId" must be a string');
         });
 
-        it('should response 400 when request menuId payload not contain atleast 1 menu', async () => {
+        it('should response 400 when payload orders not contain atleast 1 menu', async () => {
             const response = await request(app)
                 .post('/orders')
                 .send({
                     tableId,
-                    orders: [],
+                    orders: [], 
+                    status: 'unpaid', 
                 });
 
             expect(response.status).toBe(400);
@@ -590,7 +593,8 @@ describe('HTTP Server', () => {
                     orders: [{
                         menuId,
                         quantity: 4,
-                    }],
+                    }], 
+                    status: 'unpaid'
                 });
 
             expect(response.status).toBe(404);
@@ -608,7 +612,8 @@ describe('HTTP Server', () => {
                     orders: [{
                         menuId: 'not found menu',
                         quantity: 3,
-                    }],
+                    }], 
+                    status: 'unpaid', 
                 });
 
             expect(response.status).toBe(404);
@@ -623,7 +628,8 @@ describe('HTTP Server', () => {
                 .post('/orders')
                 .send({
                     tableId,
-                    orders: [5],
+                    orders: [5], 
+                    status: 'unpaid', 
                 });
 
             expect(response.status).toBe(400);
@@ -640,7 +646,8 @@ describe('HTTP Server', () => {
                     tableId,
                     orders: [{
                         menuId: 4,
-                    }],
+                    }], 
+                    status: 'unpaid'
                 });
 
             expect(response.status).toBe(400);
@@ -655,7 +662,8 @@ describe('HTTP Server', () => {
                 .post('/orders')
                 .send({
                     tableId,
-                    orders: [{}],
+                    orders: [{}], 
+                    status: 'unpaid', 
                 });
 
             expect(response.status).toBe(400);
@@ -673,7 +681,8 @@ describe('HTTP Server', () => {
                     orders: [{
                         menuId,
                         quantity: 3,
-                    }],
+                    }], 
+                    status: 'unpaid', 
                 });
 
             expect(response.status).toBe(200);
@@ -787,7 +796,8 @@ describe('HTTP Server', () => {
             // order some menu
             const orderResult = await request(app).post('/orders').send({
                 tableId,
-                orders: [{ menuId, quantity: 2 }],
+                orders: [{ menuId, quantity: 2 }], 
+                status: 'unpaid', 
             });
             orderId = orderResult.body.data.orderDetail.orderId;
             grossAmount = orderResult.body.data.orderDetail.grossAmount;
@@ -887,5 +897,24 @@ describe('HTTP Server', () => {
 
             expect(receivedEvent).toBe(false);
         });
+    });
+
+    describe('when PUT /orders', () => {
+        it('should response 400 when request payload not contain needed property', () => {
+            
+        });
+
+        it('should response 400 when request payload not meet data type spesification', () => {
+
+        });
+
+        it('should response 401 when not login yet', () => {
+
+        });
+
+        it('should response 404 when order id is not found', () => {
+
+        });
+
     });
 });
