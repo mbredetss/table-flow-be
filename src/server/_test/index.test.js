@@ -537,8 +537,8 @@ describe('HTTP Server', () => {
                 .post('/orders')
                 .send({
                     tableId: 'not a number',
-                    orders: 'not a array', 
-                    status: 5, 
+                    orders: 'not a array',
+                    status: 5,
                 });
 
             expect(response.status).toBe(400);
@@ -558,8 +558,8 @@ describe('HTTP Server', () => {
                             menuId: true,
                             quantity: 'not a number'
                         }
-                    ], 
-                    status: 'unpaid', 
+                    ],
+                    status: 'unpaid',
                 });
 
             expect(response.status).toBe(400);
@@ -574,8 +574,8 @@ describe('HTTP Server', () => {
                 .post('/orders')
                 .send({
                     tableId,
-                    orders: [], 
-                    status: 'unpaid', 
+                    orders: [],
+                    status: 'unpaid',
                 });
 
             expect(response.status).toBe(400);
@@ -593,7 +593,7 @@ describe('HTTP Server', () => {
                     orders: [{
                         menuId,
                         quantity: 4,
-                    }], 
+                    }],
                     status: 'unpaid'
                 });
 
@@ -612,8 +612,8 @@ describe('HTTP Server', () => {
                     orders: [{
                         menuId: 'not found menu',
                         quantity: 3,
-                    }], 
-                    status: 'unpaid', 
+                    }],
+                    status: 'unpaid',
                 });
 
             expect(response.status).toBe(404);
@@ -628,8 +628,8 @@ describe('HTTP Server', () => {
                 .post('/orders')
                 .send({
                     tableId,
-                    orders: [5], 
-                    status: 'unpaid', 
+                    orders: [5],
+                    status: 'unpaid',
                 });
 
             expect(response.status).toBe(400);
@@ -646,7 +646,7 @@ describe('HTTP Server', () => {
                     tableId,
                     orders: [{
                         menuId: 4,
-                    }], 
+                    }],
                     status: 'unpaid'
                 });
 
@@ -662,8 +662,8 @@ describe('HTTP Server', () => {
                 .post('/orders')
                 .send({
                     tableId,
-                    orders: [{}], 
-                    status: 'unpaid', 
+                    orders: [{}],
+                    status: 'unpaid',
                 });
 
             expect(response.status).toBe(400);
@@ -681,8 +681,8 @@ describe('HTTP Server', () => {
                     orders: [{
                         menuId,
                         quantity: 3,
-                    }], 
-                    status: 'unpaid', 
+                    }],
+                    status: 'unpaid',
                 });
 
             expect(response.status).toBe(200);
@@ -758,7 +758,7 @@ describe('HTTP Server', () => {
         });
     });
 
-    describe('when GET /orders (SSE)', () => {
+    describe('when GET /orders/sse (SSE)', () => {
         let orderId;
         let grossAmount;
         let signatureKey;
@@ -796,8 +796,8 @@ describe('HTTP Server', () => {
             // order some menu
             const orderResult = await request(app).post('/orders').send({
                 tableId,
-                orders: [{ menuId, quantity: 2 }], 
-                status: 'unpaid', 
+                orders: [{ menuId, quantity: 2 }],
+                status: 'unpaid',
             });
             orderId = orderResult.body.data.orderDetail.orderId;
             grossAmount = orderResult.body.data.orderDetail.grossAmount;
@@ -805,7 +805,7 @@ describe('HTTP Server', () => {
             server = app.listen(0);
             const port = server.address().port;
 
-            es = new EventSource(`http://localhost:${port}/orders`);
+            es = new EventSource(`http://localhost:${port}/orders/sse`);
 
             await new Promise((resolve) => {
                 es.onopen = resolve;
@@ -900,21 +900,129 @@ describe('HTTP Server', () => {
     });
 
     describe('when PUT /orders', () => {
-        it('should response 400 when request payload not contain needed property', () => {
-            
+        let accessToken;
+        let menuId;
+        let tableId;
+        let orderId;
+
+        beforeAll(async () => {
+            // login as admin to get access token
+            const loginResponse = await request(app)
+                .post('/authentications')
+                .send({
+                    username: process.env.ADMIN_USERNAME,
+                    password: process.env.ADMIN_PASSWORD,
+                });
+            accessToken = loginResponse.body.data.accessToken;
+
+            // add some menu
+            const addMenuresponse = await request(app)
+                .post('/menus')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    name: 'Nasi Goreng',
+                    price: 15000,
+                    description: 'Nasi goreng spesial dengan telur dan ayam',
+                });
+            menuId = addMenuresponse.body.data.addedMenus;
+
+            // set table count
+            const setTableCountResult = await request(app)
+                .post('/tables')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({ tableCount: 1, });
+            tableId = setTableCountResult.body.data.tables[0].id;
+
+            const addOrderResult = await request(app)
+                .post('/orders')
+                .send({
+                    tableId,
+                    orders: [{
+                        menuId,
+                        quantity: 3,
+                    }],
+                    status: 'unpaid',
+                });
+            orderId = addOrderResult.body.data.orderDetail.orderId;
         });
 
-        it('should response 400 when request payload not meet data type spesification', () => {
-
+        afterAll(async () => {
+            await AuthenticationsTableTestHelper.cleanTable();
+            await OrdersTableTestHelper.cleanTable();
+            await MenusTableTestHelper.cleanTable();
+            await TablesTableTestHelper.cleanTable();
         });
 
-        it('should response 401 when not login yet', () => {
+        it('should response 400 when request payload not contain needed property', async () => {
+            const response = await request(app)
+                .put(`/orders/${orderId}`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({});
 
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('"status" is required');
         });
 
-        it('should response 404 when order id is not found', () => {
+        it('should response 400 when request payload not meet data type spesification', async () => {
+            const response = await request(app)
+                .put(`/orders/${orderId}`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    status: 5,
+                });
 
+            expect(response.status).toBe(400);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('"status" must be a string');
         });
 
+        it('should response 401 when not login yet', async () => {
+            const response = await request(app)
+                .put(`/orders/${orderId}`)
+                .send({
+                    status: 'done',
+                });
+
+            expect(response.status).toBe(401);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('Unauthorized');
+        });
+
+        it('should response 404 when order id is not found', async () => {
+            const response = await request(app)
+                .put('/orders/order-123')
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    status: 'unpaid',
+                });
+
+            expect(response.status).toBe(404);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'fail');
+            expect(response.body.message).toBe('pesanan tidak ditemukan!');
+        });
+
+        it('should response 201 and edit order status correctly', async () => {
+            const response = await request(app)
+                .put(`/orders/${orderId}`)
+                .set('Authorization', `Bearer ${accessToken}`)
+                .send({
+                    status: 'done',
+                });
+
+            expect(response.status).toBe(201);
+            expect(response.headers['content-type']).toMatch(/application\/json/);
+            expect(response.body).toBeTypeOf('object');
+            expect(response.body).toHaveProperty('status', 'success');
+            expect(response.body.data.status).toBe('done');
+        });
     });
 });
