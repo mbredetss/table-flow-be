@@ -30,7 +30,7 @@ export const up = (pgm) => {
         }, 
         status: {
             type: 'order_status', 
-            notNull: true, 
+            default: 'unpaid', 
         }, 
     });
 };
