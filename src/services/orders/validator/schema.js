@@ -9,7 +9,6 @@ export const orderPayloadSchema = Joi.object({
     }))
     .min(1)
     .required(), 
-    status: Joi.string().required()
 });
 
 export const updateOrderStatusPayloadSchema = Joi.object({
