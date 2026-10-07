@@ -58,7 +58,7 @@ export const orderMenu = async (req, res) => {
     return response(res, 200, null, { orderDetail });
 }
 
-export const getOrder = async (req, res) => {
+export const getOrderSSE = async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -71,4 +71,16 @@ export const getOrder = async (req, res) => {
         const index = clients.indexOf(res);
         clients.splice(index, 1);
     });
+}
+
+export const updateOrderStatus = async (req, res) => {
+    const orderId = req.params.id;
+    const status = req.validated.status;
+
+    const result = await orderRepositories.updateOrderStatus(orderId, status);
+
+    if (result.rowCount === 0) response(res, 404, 'pesanan tidak ditemukan!', null);
+
+    const newStatus = { status: result.rows[0].status };
+    response(res, 201, null, newStatus);
 }

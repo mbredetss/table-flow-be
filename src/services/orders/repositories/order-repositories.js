@@ -23,11 +23,14 @@ class OrderRepositories {
             UPDATE orders
             SET status = $2
             WHERE id = $1
+            RETURNING status
             `, 
             values: [id, status], 
         };
 
-        await this.pool.query(query);
+        const result = await this.pool.query(query);
+        
+        return result;
     }
 
     async getOrderSSE(id) {
