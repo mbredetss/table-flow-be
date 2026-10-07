@@ -558,8 +558,7 @@ describe('HTTP Server', () => {
                             menuId: true,
                             quantity: 'not a number'
                         }
-                    ],
-                    status: 'unpaid',
+                    ], 
                 });
 
             expect(response.status).toBe(400);
@@ -574,8 +573,7 @@ describe('HTTP Server', () => {
                 .post('/orders')
                 .send({
                     tableId,
-                    orders: [],
-                    status: 'unpaid',
+                    orders: [], 
                 });
 
             expect(response.status).toBe(400);
@@ -612,8 +610,7 @@ describe('HTTP Server', () => {
                     orders: [{
                         menuId: 'not found menu',
                         quantity: 3,
-                    }],
-                    status: 'unpaid',
+                    }], 
                 });
 
             expect(response.status).toBe(404);
@@ -628,8 +625,7 @@ describe('HTTP Server', () => {
                 .post('/orders')
                 .send({
                     tableId,
-                    orders: [5],
-                    status: 'unpaid',
+                    orders: [5], 
                 });
 
             expect(response.status).toBe(400);
@@ -662,8 +658,7 @@ describe('HTTP Server', () => {
                 .post('/orders')
                 .send({
                     tableId,
-                    orders: [{}],
-                    status: 'unpaid',
+                    orders: [{}], 
                 });
 
             expect(response.status).toBe(400);
@@ -681,8 +676,7 @@ describe('HTTP Server', () => {
                     orders: [{
                         menuId,
                         quantity: 3,
-                    }],
-                    status: 'unpaid',
+                    }], 
                 });
 
             expect(response.status).toBe(200);
@@ -796,8 +790,7 @@ describe('HTTP Server', () => {
             // order some menu
             const orderResult = await request(app).post('/orders').send({
                 tableId,
-                orders: [{ menuId, quantity: 2 }],
-                status: 'unpaid',
+                orders: [{ menuId, quantity: 2 }], 
             });
             orderId = orderResult.body.data.orderDetail.orderId;
             grossAmount = orderResult.body.data.orderDetail.grossAmount;
@@ -940,8 +933,7 @@ describe('HTTP Server', () => {
                     orders: [{
                         menuId,
                         quantity: 3,
-                    }],
-                    status: 'unpaid',
+                    }], 
                 });
             orderId = addOrderResult.body.data.orderDetail.orderId;
         });
