@@ -79,7 +79,7 @@ export const updateOrderStatus = async (req, res) => {
 
     const result = await orderRepositories.updateOrderStatus(orderId, status);
 
-    if (result.rowCount === 0) response(res, 404, 'pesanan tidak ditemukan!', null);
+    if (result.rowCount === 0) return response(res, 404, 'pesanan tidak ditemukan!', null);
 
     const newStatus = { status: result.rows[0].status };
     response(res, 201, null, newStatus);
