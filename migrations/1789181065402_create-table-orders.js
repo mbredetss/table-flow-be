@@ -13,7 +13,7 @@ export const up = (pgm) => {
 
     pgm.createTable('orders', {
         id: {
-            type: 'CHAR(30)', 
+            type: 'VARCHAR(30)', 
             notNull: true, 
         }, 
         table_id: {

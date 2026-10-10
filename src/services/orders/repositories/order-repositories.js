@@ -36,9 +36,10 @@ class OrderRepositories {
     async getOrderSSE(id) {
         const query = {
             text: `
-            SELECT menus.name as "menuName", orders.quantity as quantity
+            SELECT menus.name as "menuName", orders.quantity as quantity, orders.id as "orderId", tables.id as "tableId"
             FROM orders
             JOIN menus ON menus.id = orders.menu_id
+            JOIN tables ON tables.id = orders.table_id
             WHERE orders.id = $1
             `, 
             values: [id]
