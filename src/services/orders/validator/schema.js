@@ -12,5 +12,5 @@ export const orderPayloadSchema = Joi.object({
 });
 
 export const updateOrderStatusPayloadSchema = Joi.object({
-    status: Joi.string().required(), 
+    status: Joi.valid('done').required(), 
 });

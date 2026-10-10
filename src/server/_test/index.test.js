@@ -980,7 +980,7 @@ describe('HTTP Server', () => {
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'fail');
-            expect(response.body.message).toBe('"status" must be a string');
+            expect(response.body.message).toBe('"status" must be [done]');
         });
 
         it('should response 401 when not login yet', async () => {
@@ -1002,7 +1002,7 @@ describe('HTTP Server', () => {
                 .put('/orders/order-123')
                 .set('Authorization', `Bearer ${accessToken}`)
                 .send({
-                    status: 'unpaid',
+                    status: 'done',
                 });
 
             expect(response.status).toBe(404);
