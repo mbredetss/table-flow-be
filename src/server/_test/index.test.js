@@ -762,6 +762,7 @@ describe('HTTP Server', () => {
 
     describe('when GET /orders/sse (SSE)', () => {
         let orderId;
+        let tableId;
         let grossAmount;
         let signatureKey;
         let server;
@@ -793,7 +794,7 @@ describe('HTTP Server', () => {
                 .post('/tables')
                 .set('Authorization', `Bearer ${accessToken}`)
                 .send({ tableCount: 1, });
-            const tableId = setTableCountResult.body.data.tables[0].id;
+            tableId = setTableCountResult.body.data.tables[0].id;
 
             // order some menu
             const orderResult = await request(app).post('/orders').send({
@@ -852,6 +853,8 @@ describe('HTTP Server', () => {
             expect(eventData).toHaveLength(1);
             expect(eventData[0].menuName).toBe('Nasi Goreng');
             expect(eventData[0].quantity).toBe(2);
+            expect(eventData[0].orderId).toBe(orderId);
+            expect(eventData[0].tableId).toBe(tableId);
         });
 
         it(`should establish SSE connection and receive order events when transaction status is 'settlement' and fraud status 'accept'`, async () => {
