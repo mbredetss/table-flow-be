@@ -48,7 +48,7 @@ export const orderMenu = async (req, res) => {
     const generateQRCode = chargeResponse.actions[0];
     const deeplinkRedirect = chargeResponse.actions[2];
     const orderDetail = {
-        qrImageURL: process.NODE_ENV !== 'production' ? deeplinkRedirect.url : generateQRCode.url,
+        qrImageURL: process.env.NODE_ENV !== 'production' ? deeplinkRedirect.url : generateQRCode.url,
         tableId,
         orderId,
         orders,
