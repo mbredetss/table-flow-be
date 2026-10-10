@@ -518,6 +518,8 @@ describe('HTTP Server', () => {
 
         afterAll(async () => {
             await AuthenticationsTableTestHelper.cleanTable();
+            await OrdersTableTestHelper.cleanTable();
+            await TablesTableTestHelper.cleanTable();
         });
 
         it('should response 400 when request payload not contain needed property', async () => {

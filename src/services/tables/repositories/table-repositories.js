@@ -6,14 +6,13 @@ class TableRepositories {
         this.pool = new Pool();
     }
 
-    async addTable(name) {
-        const id = `table-${nanoid(16)}`;
+    async addTable(id) {
         const query = {
             text: `
             INSERT INTO tables
-            VALUES($1, $2)
+            VALUES($1)
             `, 
-            values: [id, name], 
+            values: [id], 
         };
 
         await this.pool.query(query);
