@@ -691,7 +691,7 @@ describe('HTTP Server', () => {
             expect(response.headers['content-type']).toMatch(/application\/json/);
             expect(response.body).toBeTypeOf('object');
             expect(response.body).toHaveProperty('status', 'success');
-            expect(response.body.data.orderDetail.qrImageURL).toBeDefined();
+            expect(response.body.data.orderDetail.qrImageURL).toHaveLength(2);
             expect(response.body.data.orderDetail.tableId).toBe(tableId);
             expect(response.body.data.orderDetail.orders).toHaveLength(1);
             expect(response.body.data.orderDetail.orderId).toBeDefined();
