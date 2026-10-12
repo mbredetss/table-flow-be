@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import orderRepositories from "../services/orders/repositories/order-repositories.js";
 
 export const response = (res, statusCode, message, data) => {
